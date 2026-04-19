@@ -235,14 +235,15 @@ function renderHoy(){
   var bl=bankLineaDia(dia),objL=objLineaDia(dia),objT=objTotalDia(dia),faltaL=objL-bl;
   var sAdj=faltaL/(S.cuota-1),sBase=faltaL/0.2,sTot=(objT-bank)/(S.cuota-1);
 
+  var faltaDia=objT-bank;
   document.getElementById('resumen').innerHTML='<div class="card"><div class="card-title">Resumen del día</div>'
     +'<div class="metrics" style="margin-bottom:8px">'
     +'<div class="metric"><div class="metric-label">Día actual</div><div class="metric-value blue">'+dia+' / '+totalDias+'</div></div>'
     +'<div class="metric"><div class="metric-label">Días que faltan</div><div class="metric-value'+(diasFaltan<=5?' amber':'')+'">'+diasFaltan+'</div></div>'
-    +'</div><div class="metrics3">'
+    +'</div><div class="metrics3" style="margin-bottom:8px">'
     +'<div class="metric"><div class="metric-label">Bank total</div><div class="metric-value">'+bank.toFixed(2)+'€</div></div>'
-    +'<div class="metric"><div class="metric-label">Bank×línea</div><div class="metric-value">'+bl.toFixed(2)+'€</div></div>'
     +'<div class="metric"><div class="metric-label">Obj. día</div><div class="metric-value green">'+objT.toFixed(2)+'€</div></div>'
+    +'<div class="metric"><div class="metric-label">Falta hoy</div><div class="metric-value amber">'+faltaDia.toFixed(2)+'€</div></div>'
     +'</div></div>';
 
   var linHtml='';
