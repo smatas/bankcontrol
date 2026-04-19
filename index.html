@@ -246,22 +246,19 @@ function renderHoy(){
     +'<div class="metric"><div class="metric-label">Falta hoy</div><div class="metric-value amber">'+faltaDia.toFixed(2)+'€</div></div>'
     +'</div></div>';
 
-  var linHtml='';
-  for(var i=0;i<3;i++){
-    var pct=Math.min(100,bl/objL*100);
-    var cv=cuotasLinea[i]>1?cuotasLinea[i]:'';
-    var srVal=cv>1?(faltaL/(cv-1)).toFixed(2)+'€':'—';
-    linHtml+='<div class="linea"><div class="linea-header"><span class="linea-title">Línea '+(i+1)+'</span><span class="tag tag-amber">En curso</span></div>'
-      +'<div class="row"><span class="rk">Bank línea</span><span class="rv">'+bl.toFixed(2)+'€</span></div>'
-      +'<div class="row"><span class="rk">Objetivo línea</span><span class="rv green">'+objL.toFixed(2)+'€</span></div>'
-      +'<div class="row"><span class="rk">Falta para cerrar</span><span class="rv big">'+faltaL.toFixed(2)+'€</span></div>'
-      +'<div class="progress-bar"><div class="progress-fill" style="width:'+pct.toFixed(1)+'%"></div></div>'
-      +'<div class="row"><span class="rk">Stake a cuota '+S.cuota.toFixed(2)+'</span><span class="rv">'+sAdj.toFixed(2)+'€</span></div>'
-      +'<div class="cuota-box"><div class="cuota-input-row"><label>Cuota real de esta línea</label>'
-      +'<input class="cuota-input" id="ci'+i+'" type="number" step="0.01" min="1.01" placeholder="1.45" value="'+cv+'" oninput="onCuotaLinea('+i+')" inputmode="decimal"></div>'
-      +'<div class="cuota-result-row"><span class="rk">Stake necesario a esta cuota</span><span class="cuota-result-val" id="sr'+i+'">'+srVal+'</span></div>'
-      +'</div></div>';
-  }
+  var pct=Math.min(100,bl/objL*100);
+  var cv=cuotasLinea[0]>1?cuotasLinea[0]:'';
+  var srVal=cv>1?(faltaL/(cv-1)).toFixed(2)+'€':'—';
+  var linHtml='<div class="linea"><div class="linea-header"><span class="linea-title">1 línea</span><span class="tag tag-amber">En curso</span></div>'
+    +'<div class="row"><span class="rk">Bank línea</span><span class="rv">'+bl.toFixed(2)+'€</span></div>'
+    +'<div class="row"><span class="rk">Objetivo línea</span><span class="rv green">'+objL.toFixed(2)+'€</span></div>'
+    +'<div class="row"><span class="rk">Falta para cerrar</span><span class="rv big">'+faltaL.toFixed(2)+'€</span></div>'
+    +'<div class="progress-bar"><div class="progress-fill" style="width:'+pct.toFixed(1)+'%"></div></div>'
+    +'<div class="row"><span class="rk">Stake a cuota '+S.cuota.toFixed(2)+'</span><span class="rv">'+sAdj.toFixed(2)+'€</span></div>'
+    +'<div class="cuota-box"><div class="cuota-input-row"><label>Cuota real de esta línea</label>'
+    +'<input class="cuota-input" id="ci0" type="number" step="0.01" min="1.01" placeholder="1.45" value="'+cv+'" oninput="onCuotaLinea(0)" inputmode="decimal"></div>'
+    +'<div class="cuota-result-row"><span class="rk">Stake necesario a esta cuota</span><span class="cuota-result-val" id="sr0">'+srVal+'</span></div>'
+    +'</div></div>';
   document.getElementById('lineas').innerHTML=linHtml;
 
   var cgVal=cuotaGlobal>1?cuotaGlobal:'';
