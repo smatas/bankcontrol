@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#185FA5"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Bank Control"/>
+  <title>Bank Control</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    .app{max-width:440px;margin:0 auto;padding:12px;display:flex;flex-direction:column;gap:12px;min-height:100vh;background:#f5f5f5}
+    .screen{display:none}.screen.active{display:flex;flex-direction:column;gap:12px}
+    .topbar{display:flex;align-items:center;gap:8px;padding:4px 0}
+    .topbar h1{font-size:18px;font-weight:600;color:#1a1a1a;flex:1}
+    .bank-badge{background:#fff;border:1px solid #ddd;border-radius:10px;padding:7px 13px;font-size:13px;font-weight:600;color:#1a1a1a;cursor:pointer;white-space:nowrap}
+    .nav{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .nav-btn{background:#e8e8e8;border:none;border-radius:10px;padding:10px 4px;font-size:13px;font-weight:500;color:#666;cursor:pointer;text-align:center}
+    .nav-btn.active{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.12);color:#1a1a1a;font-weight:600}
+    .card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,0.07)}
+    .card-title{font-size:11px;color:#888;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.6px;font-weight:500}
+    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .metrics3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .metric{background:#f5f5f5;border-radius:10px;padding:10px;text-align:center}
+    .metric-label{font-size:11px;color:#888;margin-bottom:4px}
+    .metric-value{font-size:17px;font-weight:600;color:#1a1a1a}
+    .metric-value.blue{color:#185FA5}
+    .metric-value.green{color:#2d7a2d}
+    .metric-value.amber{color:#b36b00}
+    .linea{background:#fff;border-radius:14px;padding:13px;box-shadow:0 1px 3px rgba(0,0,0,0.07);display:flex;flex-direction:column;gap:9px}
+    .linea-header{display:flex;align-items:center;justify-content:space-between}
+    .linea-title{font-size:14px;font-weight:600;color:#1a1a1a}
+    .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .rk{font-size:12px;color:#888}
+    .rv{font-size:13px;font-weight:600;color:#1a1a1a}
+    .rv.big{font-size:16px;color:#185FA5}
+    .rv.green{color:#2d7a2d}
+    .progress-bar{width:100%;height:5px;background:#eee;border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;border-radius:3px;background:#185FA5}
+    .cuota-box{background:#f5f5f5;border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:9px}
+    .cuota-input-row{display:flex;align-items:center;gap:12px}
+    .cuota-input-row label{font-size:13px;color:#555;flex:1;line-height:1.4}
+    .cuota-input{border:1px solid #ccc;border-radius:8px;padding:6px 8px;font-size:15px;font-weight:600;background:#fff;color:#1a1a1a;width:62px;text-align:center}
+    .cuota-result-row{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #ddd}
+    .cuota-result-val{font-size:18px;font-weight:700;color:#185FA5}
+    .field{display:flex;flex-direction:column;gap:5px}
+    .field label{font-size:12px;color:#888;font-weight:500}
+    .field input{border:1px solid #ddd;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;color:#1a1a1a;width:100%}
+    .field input:focus{outline:none;border-color:#185FA5}
+    .btn-primary{width:100%;padding:13px;background:#185FA5;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer}
+    .btn-secondary{width:100%;padding:11px;background:#f0f0f0;color:#333;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer}
+    .dia-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0}
+    .dia-row:last-child{border-bottom:none}
+    .dia-row.current-day{background:#EEF4FB;margin:0 -14px;padding:8px 14px;border-radius:8px}
+    .modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:100}
+    .modal{background:#fff;border-radius:18px;padding:22px;width:300px;display:flex;flex-direction:column;gap:14px}
+    .modal-title{font-size:16px;font-weight:600;color:#1a1a1a}
+    .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .wrap{position:relative}
+    .empty{text-align:center;padding:24px;color:#aaa;font-size:14px}
+    .divider{height:1px;background:#eee}
+    .tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+    .tag-blue{background:#EEF4FB;color:#185FA5}
+    .tag-amber{background:#FFF3E0;color:#b36b00}
+    .tag-green{background:#E8F5E9;color:#2d7a2d}
+    .global-cuota-box{background:#f5f5f5;border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:9px;margin-top:4px}
+    .global-cuota-row{display:flex;align-items:center;gap:12px}
+    .global-cuota-row label{font-size:13px;color:#555;flex:1;line-height:1.4}
+    .global-cuota-input{border:1px solid #ccc;border-radius:8px;padding:6px 8px;font-size:15px;font-weight:600;background:#fff;color:#1a1a1a;width:62px;text-align:center}
+    .global-result{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #ddd}
+    .global-result-val{font-size:18px;font-weight:700;color:#185FA5}
+    .install-banner{background:#185FA5;color:#fff;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+    .install-banner p{font-size:13px;line-height:1.4;flex:1}
+    .install-banner strong{font-size:14px;display:block;margin-bottom:2px}
+    .install-x{font-size:20px;opacity:0.7;padding:0 4px}
+  </style>
+</head>
+<body>
+<div class="app wrap" id="app">
+  <div id="installBanner" style="display:none" class="install-banner" onclick="instalarApp()">
+    <div style="font-size:24px">📲</div>
+    <p><strong>Instalar en el móvil</strong>Toca aquí para añadir a la pantalla de inicio</p>
+    <div class="install-x" onclick="ocultarBanner(event)">✕</div>
+  </div>
+
+  <div class="topbar">
+    <h1>Bank Control</h1>
+    <div class="bank-badge" onclick="openModal()">Bank: <span id="bankDisplay">—</span></div>
+  </div>
+  <div class="nav">
+    <div class="nav-btn active" onclick="goTo('hoy',this)">Hoy</div>
+    <div class="nav-btn" onclick="goTo('hist',this)">Historial</div>
+    <div class="nav-btn" onclick="goTo('cfg',this)">Config</div>
+  </div>
+
+  <div class="screen active" id="screen-hoy">
+    <div id="resumen"></div>
+    <div id="lineas"></div>
+    <div id="stakes"></div>
+  </div>
+
+  <div class="screen" id="screen-hist">
+    <div class="card">
+      <div class="card-title">Plan completo de días</div>
+      <div id="planContainer"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-cfg">
+    <div class="card">
+      <div class="card-title">Configuración del sistema</div>
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <div class="field"><label>Bank inicial (€)</label><input type="number" id="cfgBI" step="0.01" placeholder="Ej: 15" inputmode="decimal"/></div>
+        <div class="field"><label>Cuota media objetivo</label><input type="number" id="cfgCuota" step="0.01" placeholder="Ej: 1.2" inputmode="decimal"/></div>
+        <div class="field"><label>Objetivo de bank final (€)</label><input type="number" id="cfgObj" step="1" placeholder="Ej: 1000" inputmode="decimal"/></div>
+        <button class="btn-primary" onclick="guardarConfig()">Guardar configuración</button>
+        <div class="divider"></div>
+        <button class="btn-secondary" onclick="resetTodo()">Reiniciar todo</button>
+      </div>
+    </div>
+    <div class="card" id="cfgInfoCard" style="display:none">
+      <div class="card-title">Resumen del plan</div>
+      <div id="cfgInfo"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Actualizar bank actual</div>
+    <div class="field"><label>Bank actual (€)</label><input type="number" id="bankInput" step="0.01" inputmode="decimal"/></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="actualizarBank()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var S={bi:null,cuota:null,obj:null,bank:null,registros:[]};
+var cuotasLinea=[0,0,0];
+var cuotaGlobal=0;
+var deferredPrompt=null;
+
+function load(){try{var r=localStorage.getItem('bkctrl4');if(r){var p=JSON.parse(r);S=p.s||S;cuotasLinea=p.cl||[0,0,0];cuotaGlobal=p.cg||0;}}catch(e){}}
+function save(){try{localStorage.setItem('bkctrl4',JSON.stringify({s:S,cl:cuotasLinea,cg:cuotaGlobal}));}catch(e){}}
+load();
+
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('installBanner').style.display='flex';
+});
+function instalarApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;document.getElementById('installBanner').style.display='none';});}}
+function ocultarBanner(e){e.stopPropagation();document.getElementById('installBanner').style.display='none';}
+
+function bankDia(d){return S.bi*Math.pow(S.cuota,d-1);}
+function bankLineaDia(d){return bankDia(d)/3;}
+function objLineaDia(d){return bankLineaDia(d)*S.cuota;}
+function objTotalDia(d){return objLineaDia(d)*3;}
+function calcTotalDias(){if(!S.bi||!S.cuota||!S.obj)return 0;return Math.ceil(Math.log(S.obj/S.bi)/Math.log(S.cuota));}
+function detectarDia(bank){if(!S.bi||!S.cuota)return 1;var d=1,max=calcTotalDias()+5;while(d<max){if(bank<bankDia(d+1))return d;d++;}return d;}
+
+function goTo(id,el){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById('screen-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+  el.classList.add('active');
+  if(id==='hoy')renderHoy();if(id==='hist')renderHist();if(id==='cfg')renderCfg();
+}
+
+function openModal(){document.getElementById('bankInput').value=S.bank||'';document.getElementById('modal').style.display='flex';}
+function closeModal(){document.getElementById('modal').style.display='none';}
+function actualizarBank(){
+  var v=parseFloat(document.getElementById('bankInput').value);
+  if(isNaN(v)||v<=0){alert('Introduce un valor válido');return;}
+  S.bank=v;S.registros.push({bank:v,dia:detectarDia(v),ts:Date.now()});
+  save();closeModal();renderHoy();
+}
+
+function onCuotaLinea(idx){
+  var el=document.getElementById('ci'+idx);
+  var v=parseFloat(el.value);
+  cuotasLinea[idx]=(!isNaN(v)&&v>1)?v:0;
+  save();recalcLinea(idx);
+}
+function recalcLinea(idx){
+  if(!S.bi||!S.cuota)return;
+  var bank=S.bank!==null?S.bank:S.bi;
+  var dia=detectarDia(bank);
+  var faltaL=objLineaDia(dia)-bankLineaDia(dia);
+  var el=document.getElementById('sr'+idx);
+  if(!el)return;
+  var c=cuotasLinea[idx];
+  el.textContent=(c>1)?(faltaL/(c-1)).toFixed(2)+'€':'—';
+}
+function onCuotaGlobal(){
+  var el=document.getElementById('cgInput');
+  var v=parseFloat(el.value);
+  cuotaGlobal=(!isNaN(v)&&v>1)?v:0;
+  save();recalcGlobal();
+}
+function recalcGlobal(){
+  if(!S.bi||!S.cuota)return;
+  var bank=S.bank!==null?S.bank:S.bi;
+  var dia=detectarDia(bank);
+  var objT=objTotalDia(dia);
+  var el=document.getElementById('sgResult');
+  if(!el)return;
+  var c=cuotaGlobal;
+  el.textContent=(c>1)?((objT-bank)/(c-1)).toFixed(2)+'€':'—';
+}
+
+function renderHoy(){
+  if(!S.bi){
+    document.getElementById('resumen').innerHTML='<div class="card"><div class="empty">Configura el sistema primero en la pestaña Config</div></div>';
+    document.getElementById('lineas').innerHTML='';document.getElementById('stakes').innerHTML='';
+    document.getElementById('bankDisplay').textContent='—';return;
+  }
+  var bank=S.bank!==null?S.bank:S.bi;
+  var dia=detectarDia(bank);
+  var totalDias=calcTotalDias();
+  var diasFaltan=Math.max(0,totalDias-dia);
+  document.getElementById('bankDisplay').textContent=bank.toFixed(2)+'€';
+  var bl=bankLineaDia(dia),objL=objLineaDia(dia),objT=objTotalDia(dia),faltaL=objL-bl;
+  var sAdj=faltaL/(S.cuota-1),sBase=faltaL/0.2,sTot=(objT-bank)/(S.cuota-1);
+
+  document.getElementById('resumen').innerHTML='<div class="card"><div class="card-title">Resumen del día</div>'
+    +'<div class="metrics" style="margin-bottom:8px">'
+    +'<div class="metric"><div class="metric-label">Día actual</div><div class="metric-value blue">'+dia+' / '+totalDias+'</div></div>'
+    +'<div class="metric"><div class="metric-label">Días que faltan</div><div class="metric-value'+(diasFaltan<=5?' amber':'')+'">'+diasFaltan+'</div></div>'
+    +'</div><div class="metrics3">'
+    +'<div class="metric"><div class="metric-label">Bank total</div><div class="metric-value">'+bank.toFixed(2)+'€</div></div>'
+    +'<div class="metric"><div class="metric-label">Bank×línea</div><div class="metric-value">'+bl.toFixed(2)+'€</div></div>'
+    +'<div class="metric"><div class="metric-label">Obj. día</div><div class="metric-value green">'+objT.toFixed(2)+'€</div></div>'
+    +'</div></div>';
+
+  var linHtml='';
+  for(var i=0;i<3;i++){
+    var pct=Math.min(100,bl/objL*100);
+    var cv=cuotasLinea[i]>1?cuotasLinea[i]:'';
+    var srVal=cv>1?(faltaL/(cv-1)).toFixed(2)+'€':'—';
+    linHtml+='<div class="linea"><div class="linea-header"><span class="linea-title">Línea '+(i+1)+'</span><span class="tag tag-amber">En curso</span></div>'
+      +'<div class="row"><span class="rk">Bank línea</span><span class="rv">'+bl.toFixed(2)+'€</span></div>'
+      +'<div class="row"><span class="rk">Objetivo línea</span><span class="rv green">'+objL.toFixed(2)+'€</span></div>'
+      +'<div class="row"><span class="rk">Falta para cerrar</span><span class="rv big">'+faltaL.toFixed(2)+'€</span></div>'
+      +'<div class="progress-bar"><div class="progress-fill" style="width:'+pct.toFixed(1)+'%"></div></div>'
+      +'<div class="row"><span class="rk">Stake a cuota '+S.cuota.toFixed(2)+'</span><span class="rv">'+sAdj.toFixed(2)+'€</span></div>'
+      +'<div class="cuota-box"><div class="cuota-input-row"><label>Cuota real de esta línea</label>'
+      +'<input class="cuota-input" id="ci'+i+'" type="number" step="0.01" min="1.01" placeholder="1.45" value="'+cv+'" oninput="onCuotaLinea('+i+')" inputmode="decimal"></div>'
+      +'<div class="cuota-result-row"><span class="rk">Stake necesario a esta cuota</span><span class="cuota-result-val" id="sr'+i+'">'+srVal+'</span></div>'
+      +'</div></div>';
+  }
+  document.getElementById('lineas').innerHTML=linHtml;
+
+  var cgVal=cuotaGlobal>1?cuotaGlobal:'';
+  var sgVal=cuotaGlobal>1?((objT-bank)/(cuotaGlobal-1)).toFixed(2)+'€':'—';
+  document.getElementById('stakes').innerHTML='<div class="card"><div class="card-title">Stakes globales</div>'
+    +'<div style="display:flex;flex-direction:column;gap:9px">'
+    +'<div class="row"><span class="rk">Stake por línea a cuota 1.20</span><span class="rv">'+sBase.toFixed(2)+'€</span></div>'
+    +'<div class="row"><span class="rk">Stake por línea a cuota '+S.cuota.toFixed(2)+'</span><span class="rv">'+sAdj.toFixed(2)+'€</span></div>'
+    +'<div class="row"><span class="rk">Stake para cerrar las 3 líneas (cuota '+S.cuota.toFixed(2)+')</span><span class="rv blue">'+sTot.toFixed(2)+'€</span></div>'
+    +'<div class="global-cuota-box"><div class="global-cuota-row"><label>Cuota real para cerrar las 3 líneas</label>'
+    +'<input class="global-cuota-input" id="cgInput" type="number" step="0.01" min="1.01" placeholder="1.45" value="'+cgVal+'" oninput="onCuotaGlobal()" inputmode="decimal"></div>'
+    +'<div class="global-result"><span class="rk">Stake necesario a esta cuota</span><span class="global-result-val" id="sgResult">'+sgVal+'</span>'
+    +'</div></div></div></div>';
+}
+
+function renderHist(){
+  if(!S.bi){document.getElementById('planContainer').innerHTML='<div class="empty">Configura el sistema primero</div>';return;}
+  var bank=S.bank!==null?S.bank:S.bi;
+  var diaActual=detectarDia(bank),total=calcTotalDias(),html='';
+  for(var d=1;d<=total;d++){
+    var bk=bankDia(d),oT=objTotalDia(d),esCurrent=(d===diaActual);
+    html+='<div class="dia-row'+(esCurrent?' current-day':'')+'">'
+      +'<span style="font-size:13px;font-weight:600;color:#1a1a1a;min-width:40px">Día '+d+'</span>'
+      +(esCurrent?'<span class="tag tag-blue">Hoy</span>':'<span style="font-size:11px;color:#aaa">'+(d<diaActual?'✓':'pendiente')+'</span>')
+      +'<span style="font-size:12px;color:#888">'+bk.toFixed(2)+'€</span>'
+      +'<span style="font-size:13px;font-weight:600;color:#2d7a2d">→ '+oT.toFixed(2)+'€</span>'
+      +'</div>';
+  }
+  document.getElementById('planContainer').innerHTML=html;
+}
+
+function renderCfg(){
+  if(S.bi)document.getElementById('cfgBI').value=S.bi;
+  if(S.cuota)document.getElementById('cfgCuota').value=S.cuota;
+  if(S.obj)document.getElementById('cfgObj').value=S.obj;
+  renderCfgInfo();
+}
+function renderCfgInfo(){
+  if(!S.bi||!S.cuota||!S.obj)return;
+  var td=calcTotalDias();
+  document.getElementById('cfgInfoCard').style.display='block';
+  document.getElementById('cfgInfo').innerHTML=
+    '<div class="row" style="padding:4px 0"><span class="rk">Bank inicial</span><span class="rv">'+S.bi.toFixed(2)+'€</span></div>'
+    +'<div class="row" style="padding:4px 0"><span class="rk">Bank por línea día 1</span><span class="rv">'+(S.bi/3).toFixed(2)+'€</span></div>'
+    +'<div class="row" style="padding:4px 0"><span class="rk">Cuota objetivo</span><span class="rv">'+S.cuota.toFixed(2)+'</span></div>'
+    +'<div class="row" style="padding:4px 0"><span class="rk">Objetivo final</span><span class="rv">'+S.obj+'€</span></div>'
+    +'<div class="row" style="padding:4px 0"><span class="rk">Total días del plan</span><span class="rv blue">'+td+' días</span></div>';
+}
+function guardarConfig(){
+  var bi=parseFloat(document.getElementById('cfgBI').value);
+  var cu=parseFloat(document.getElementById('cfgCuota').value);
+  var ob=parseFloat(document.getElementById('cfgObj').value);
+  if(isNaN(bi)||isNaN(cu)||isNaN(ob)||bi<=0||cu<=1||ob<=0){alert('Revisa los valores. La cuota debe ser mayor que 1.');return;}
+  S.bi=bi;S.cuota=cu;S.obj=ob;if(S.bank===null)S.bank=bi;
+  save();renderCfgInfo();alert('¡Configuración guardada!');
+}
+function resetTodo(){
+  if(!confirm('¿Seguro? Se borrarán todos los datos'))return;
+  S={bi:null,cuota:null,obj:null,bank:null,registros:[]};cuotasLinea=[0,0,0];cuotaGlobal=0;
+  save();renderCfg();renderHoy();
+}
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+renderHoy();
+</script>
+</body>
+</html>
