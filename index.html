@@ -144,10 +144,11 @@
 var S={bi:null,cuota:null,obj:null,bank:null,registros:[]};
 var cuotasLinea=[0,0,0];
 var cuotaGlobal=0;
+var bankTotalActual=0;
 var deferredPrompt=null;
 
-function load(){try{var r=localStorage.getItem('bkctrl4');if(r){var p=JSON.parse(r);S=p.s||S;cuotasLinea=p.cl||[0,0,0];cuotaGlobal=p.cg||0;}}catch(e){}}
-function save(){try{localStorage.setItem('bkctrl4',JSON.stringify({s:S,cl:cuotasLinea,cg:cuotaGlobal}));}catch(e){}}
+function load(){try{var r=localStorage.getItem('bkctrl4');if(r){var p=JSON.parse(r);S=p.s||S;cuotasLinea=p.cl||[0,0,0];cuotaGlobal=p.cg||0;bankTotalActual=p.bta||0;}}catch(e){}}
+function save(){try{localStorage.setItem('bkctrl4',JSON.stringify({s:S,cl:cuotasLinea,cg:cuotaGlobal,bta:bankTotalActual}));}catch(e){}}
 load();
 
 window.addEventListener('beforeinstallprompt',function(e){
@@ -196,6 +197,12 @@ function recalcLinea(idx){
   if(!el)return;
   var c=cuotasLinea[idx];
   el.textContent=(c>1)?(faltaL/(c-1)).toFixed(2)+'€':'—';
+}
+function onBankTotalActual(){
+  var el=document.getElementById('btaInput');
+  var v=parseFloat(el.value);
+  bankTotalActual=(!isNaN(v)&&v>0)?v:0;
+  save();recalcGlobal();
 }
 function onCuotaGlobal(){
   var el=document.getElementById('cgInput');
@@ -257,16 +264,22 @@ function renderHoy(){
   document.getElementById('lineas').innerHTML=linHtml;
 
   var cgVal=cuotaGlobal>1?cuotaGlobal:'';
-  var sgVal=cuotaGlobal>1?((objT-bank)/(cuotaGlobal-1)).toFixed(2)+'€':'—';
-  document.getElementById('stakes').innerHTML='<div class="card"><div class="card-title">Stakes globales</div>'
-    +'<div style="display:flex;flex-direction:column;gap:9px">'
-    +'<div class="row"><span class="rk">Stake por línea a cuota 1.20</span><span class="rv">'+sBase.toFixed(2)+'€</span></div>'
-    +'<div class="row"><span class="rk">Stake por línea a cuota '+S.cuota.toFixed(2)+'</span><span class="rv">'+sAdj.toFixed(2)+'€</span></div>'
-    +'<div class="row"><span class="rk">Stake para cerrar las 3 líneas (cuota '+S.cuota.toFixed(2)+')</span><span class="rv blue">'+sTot.toFixed(2)+'€</span></div>'
-    +'<div class="global-cuota-box"><div class="global-cuota-row"><label>Cuota real para cerrar las 3 líneas</label>'
-    +'<input class="global-cuota-input" id="cgInput" type="number" step="0.01" min="1.01" placeholder="1.45" value="'+cgVal+'" oninput="onCuotaGlobal()" inputmode="decimal"></div>'
-    +'<div class="global-result"><span class="rk">Stake necesario a esta cuota</span><span class="global-result-val" id="sgResult">'+sgVal+'</span>'
-    +'</div></div></div></div>';
+  var faltaTotal=objT-bank;
+  var sTotCuotaObj=faltaTotal/(S.cuota-1);
+  var sgVal=cuotaGlobal>1?(faltaTotal/(cuotaGlobal-1)).toFixed(2)+'€':'—';
+  var pctTotal=Math.min(100,bank/objT*100);
+
+  document.getElementById('stakes').innerHTML='<div class="linea">'
+    +'<div class="linea-header"><span class="linea-title">Total (3 líneas)</span><span class="tag tag-blue">Global</span></div>'
+    +'<div class="row"><span class="rk">Bank total</span><span class="rv">'+bank.toFixed(2)+'€</span></div>'
+    +'<div class="row"><span class="rk">Objetivo total</span><span class="rv green">'+objT.toFixed(2)+'€</span></div>'
+    +'<div class="row"><span class="rk">Falta para cerrar</span><span class="rv big">'+faltaTotal.toFixed(2)+'€</span></div>'
+    +'<div class="progress-bar"><div class="progress-fill" style="width:'+pctTotal.toFixed(1)+'%"></div></div>'
+    +'<div class="row"><span class="rk">Stake a cuota '+S.cuota.toFixed(2)+'</span><span class="rv">'+sTotCuotaObj.toFixed(2)+'€</span></div>'
+    +'<div class="cuota-box"><div class="cuota-input-row"><label>Cuota real para cerrar las 3 líneas</label>'
+    +'<input class="cuota-input" id="cgInput" type="number" step="0.01" min="1.01" placeholder="1.45" value="'+cgVal+'" oninput="onCuotaGlobal()" inputmode="decimal"></div>'
+    +'<div class="cuota-result-row"><span class="rk">Stake necesario a esta cuota</span><span class="cuota-result-val" id="sgResult">'+sgVal+'</span></div>'
+    +'</div></div>';
 }
 
 function renderHist(){
