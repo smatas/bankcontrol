@@ -187,6 +187,8 @@ function onCuotaLinea(idx){
   var v=parseFloat(el.value);
   cuotasLinea[idx]=(!isNaN(v)&&v>1)?v:0;
   save();recalcLinea(idx);
+  var cgEl=document.getElementById('cgInput');
+  if(cgEl){cgEl.value=el.value;cuotaGlobal=cuotasLinea[idx];save();recalcGlobal();}
 }
 function recalcLinea(idx){
   if(!S.bi||!S.cuota)return;
